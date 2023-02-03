@@ -1,5 +1,5 @@
 from functions import *
-from world import Map
+from map_generator import Map
 
 class Game():
     def __init__(self):
