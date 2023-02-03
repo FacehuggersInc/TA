@@ -5,10 +5,9 @@ from creatures.player import Player, character_folder, characters
 from functions import *
 from game import Game
 
-
 class Main():
     def __init__(self):
-        self.player_loaded = None
+        self.player_loaded = False
         self.current_player = None
 
     # Menu Functions
@@ -136,7 +135,6 @@ class Main():
                     print("\n    [Err] Option Unavailable")
                     hold()
                     break
-
 
 if __name__ == "__main__":
     # Initialize and Run
