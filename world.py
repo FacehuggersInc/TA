@@ -36,6 +36,8 @@ class Room():
 """)
 
 class Map():
+    DIRECTIONS = ["N","S","W","E"]
+
     def __init__(self):
         self.rooms = []
         self.existingRooms = []
@@ -93,7 +95,7 @@ class Map():
                 nextRoomsID = self.rooms[roomIndex + 1].id
 
             #Choose a direction
-            direction = random.choice(["N","S","W","E"])
+            direction = random.choice(self.DIRECTIONS)
 
             #Corrections
             if len(self.directions) > 1:
@@ -135,49 +137,40 @@ class Map():
                 currentCoord = room.coordinate
 
             #No Overlap
-            if len(self.existingRooms) > 1: #need more than one room to compare
+            if len(self.existingRooms) > 1 and room.starting_room == False: #need more than one room to compare
                 for existingRoom in self.existingRooms: #looping here so we can look at each rooms coordinates
-                    while True:#Adding another loop so we can look at all directions one room at a time
-                        if existingRoom.coordinate == room.coordinate: #<_ Coords still match, loops when it shouldnt really
-                            #Back Up in Coords
-                            print("Before")
-                            print(existingRoom.coordinate)
-                            print(room.coordinate)
-                            x = room.coordinate[0]
-                            y = room.coordinate[1]
-                            if self.directions[-1] == "N":  y -= 1
-                            elif self.directions[-1] == "S": y += 1
-                            elif self.directions[-1] == "W": x += 1
-                            elif self.directions[-1] == "E": x -= 1
-                            room.coordinate = [x,y]
+                    if existingRoom.coordinate == room.coordinate: #<_ Coords still match, loops when it shouldnt really
+                        #Back Up in Coords
+                        x = room.coordinate[0]
+                        y = room.coordinate[1]
+                        if self.directions[-1] == "N":  y -= 1
+                        elif self.directions[-1] == "S": y += 1
+                        elif self.directions[-1] == "W": x += 1
+                        elif self.directions[-1] == "E": x -= 1
+                        room.coordinate = [x,y]
 
-                            #Choose a differnt Direction
-                            if self.directions[-1] == "N": 
-                                direction = random.choice(["S","W","E"])
-                            elif self.directions[-1] == "S":
-                                direction = random.choice(["N","W","E"])
-                            elif self.directions[-1] == "W":
-                                direction = random.choice(["S","N","E"])
-                            elif self.directions[-1] == "E":
-                                direction = random.choice(["S","N","W"])
-                            
-                            #Re Assign Coord
-                            x = room.coordinate[0]
-                            y = room.coordinate[1]
-                            if self.directions[-1] == "N":  y += 1
-                            elif self.directions[-1] == "S": y -= 1
-                            elif self.directions[-1] == "W": x -= 1
-                            elif self.directions[-1] == "E": x += 1
-                            room.coordinate = [x,y]
-                            currentCoord = room.coordinate
-                            print("After")
-                            print(existingRoom.coordinate)
-                            print(room.coordinate)
-                        else:
-                            print(f"Corected Overlap | {existingRoom.coordinate} : {room.coordinate}")
-                            break #Break the while true if no other coords are the same
-                    #break the for loop
-                    break
+                        #Choose a differnt Direction
+                        if self.directions[-1] == "N": 
+                            direction = random.choice(["S","W","E"])
+                        elif self.directions[-1] == "S":
+                            direction = random.choice(["N","W","E"])
+                        elif self.directions[-1] == "W":
+                            direction = random.choice(["S","N","E"])
+                        elif self.directions[-1] == "E":
+                            direction = random.choice(["S","N","W"])
+                        
+                        #Re Assign Coord
+                        x = room.coordinate[0]
+                        y = room.coordinate[1]
+                        if self.directions[-1] == "N":  y += 1
+                        elif self.directions[-1] == "S": y -= 1
+                        elif self.directions[-1] == "W": x -= 1
+                        elif self.directions[-1] == "E": x += 1
+                        room.coordinate = [x,y]
+                        currentCoord = room.coordinate
+                        
+                        #break the for loop
+                        break
 
             #Assign | Room IDS & Add to directions
             if direction == "N":
