@@ -70,6 +70,7 @@ class Main():
                 self.current_player.gender = ''
                 self.current_player.create_player()
 
+    #Main Menu Function
     def menu(self):
         while True:
             tabTitle("TA", "Main Menu")
