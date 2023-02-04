@@ -1,20 +1,13 @@
 import random
 from functions import *
 
-#TO DO:
-"""
-- Fix Overlap Problem; Solution Below
-- Add Doors going back to the last room
-
-"""
-
 class Room():
     def __init__(self):
         self.coordinate = None
 
         self.id = None
-        self.starting_room = False
-        self.exit_room = False
+        self.start = False
+        self.exit = False
 
         #Room Doors
         self.N = None
@@ -24,17 +17,11 @@ class Room():
 
     def __str__(self):
         return(f"""
-----------------------------------------------
-    Start?: {self.starting_room}
-    Exit?: {self.exit_room}
-
+    Start?: {self.start}
+    Exit?: {self.exit}
     ID: {self.id}
     Coords: {self.coordinate}
-    N Door: {self.N}
-    S Door: {self.S}
-    W Door: {self.W}
-    E Door: {self.E}
-----------------------------------------------
+    N Door:{self.N} | S Door:{self.S} | W Door:{self.W} | E Door:{self.E}
 """)
 
 class Map():
@@ -43,178 +30,105 @@ class Map():
         self.coordinates = []
         self.creationData = []
 
-    def create_blank_rooms(self, roomsToCreate, existingRoomIDs):
-        for x in range(roomsToCreate):
-            room = Room() #Create New Room
-            while True:
-                id = random.randint(1, roomsToCreate)
-                if not id in existingRoomIDs:
-                    existingRoomIDs.append(id)
-                    room.id = id
-                    break
-            self.rooms.append(room) #Add room to list
+    def start_room(self):
+        starting_room = Room()
+        starting_room.start = True
+        starting_room.coordinate = [0,0]
+        starting_room.id = 1
+        return starting_room
 
-    def generate_map(self, roomsToCreate = int):
+    def increment_coord(self, current_coord, direction = str):
+        x = current_coord[0]
+        y = current_coord[1]
+        match direction:
+            case "N": y += 1
+            case "S": y -= 1
+            case "W": x -= 1
+            case "E": x += 1
+        next_coord = [x,y]
+        return next_coord
+
+    def create_path(self, path_distance = int):
         DIRECTIONS = ["N","S","W","E"]
+        UP_CLKWSE_CRCL = ["N","E","S","W"]
+        UP_CNTR_CLKWSE_CRCL = ["N","W","S","E"]
+        DWN_CLKWSE_CRCL = ["S","E","N","W"]
+        DWN_CNTR_CLKWSE_CRCL = ["S","W","N","E"]
+        
+        path = []
+        while not len(path) == (path_distance - 1):
+            dir = random.choice(DIRECTIONS)
 
+            #No Circles
+            if len(path) >= 4:
+                path_slice = [path[-4],path[-3],path[-2],path[-1]]
+                if path_slice == UP_CLKWSE_CRCL:
+                    for p in range(4):
+                        del path[-1]
+                elif path_slice == UP_CNTR_CLKWSE_CRCL:
+                    for p in range(4):
+                        del path[-1]
+                elif path_slice == DWN_CLKWSE_CRCL:
+                    for p in range(4):
+                        del path[-1]
+                elif path_slice == DWN_CNTR_CLKWSE_CRCL:
+                    for p in range(4):
+                        del path[-1]
+
+            #Cant go back
+            if len(path) > 1:
+                if path[-1] == "N" and dir == "S":dir = random.choice(["N","W","E"])
+                elif path[-1] == "S" and dir == "N":dir = random.choice(["S","W","E"])
+                elif path[-1] == "W" and dir == "E":dir = random.choice(["S","N","W"])
+                elif path[-1] == "E" and dir == "W":dir = random.choice(["S","N","E"])
+
+            path.append(dir)
+        return path
+
+
+
+    def generate(self, roomsToCreate = int):
+        #Comparison Varibles
         existingRooms = []
         existingRoomIDs = []
-        directions = []
 
-        #Set amount of rooms then create rooms
-        if not roomsToCreate: roomsToCreate = random.randint(5,9)
-        self.create_blank_rooms(roomsToCreate, existingRoomIDs)
+        #Create the Starting Room
+        start_room = self.start_room()
+        self.rooms.append(start_room)
 
-        #Find Room ID 1 and make it the starting room
+        #Add start_room to generation varibles
+        existingRooms.append(start_room)
+        existingRoomIDs.append(start_room.id)
+        self.coordinates.append(start_room.coordinate)
+        current_coord = start_room.coordinate
+
+        #Generate Blank Rooms
+        for x in range(roomsToCreate - 1):
+            room = Room()
+            self.rooms.append(room)
+
+        #Assign Ids
         for room in self.rooms:
-            if room.id == 1:
-                room.starting_room = True
-                room.coordinate = [0,0]
-                break
+            if room.start == True: 
+                continue
+            while True:
+                id = random.randint(1,roomsToCreate)
+                if not id in existingRoomIDs:
+                    room.id = id
+                    existingRoomIDs.append(id)
+                    break
 
-        #Bring Starting Room to front of list so we can start there when assigning rooms to doors in a for loop
+        #Create Main Path
+        path = self.create_path(roomsToCreate)
+
+        #Connect Rooms According to Path & Assign Coordinates
+
+
+
+        #Debugging
         for room in self.rooms:
-            if room.starting_room == True:
-                self.rooms.pop(self.rooms.index(room))
-                self.rooms.insert(0, room)
-                break
-
-        #PATHING / CONNECT ROOMS-----
-        currentCoord = [0,0]
-        for room in self.rooms:
-            turned = False
-            roomIndex = self.rooms.index(room)
-
-            #Next Room ID | If we reach the end of rooms list, we make the room an exit room
-            if roomIndex == len(self.rooms) - 1: 
-                nextRoomsID = None
-                room.exit_room = True
-            else: 
-                nextRoomsID = self.rooms[roomIndex + 1].id
-
-            #Choose a direction
-            direction = random.choice(DIRECTIONS)
-
-            #| CORRECTIONS : I want to turn if we've gone the same way twice
-            try:
-                if directions[-1] == direction:
-                    match direction:
-                        case "N": 
-                            direction = random.choice(["W","E"])
-                        case "S": 
-                            direction = random.choice(["W","E"])
-                        case "W": 
-                            direction = random.choice(["N","S"])
-                        case "E": 
-                            direction = random.choice(["N","S"])
-                    turned = True
-            except IndexError: pass
-
-            #| CORRECTIONS : We dont want rooms going directly back onto themselfs
-            if turned == False:
-                try:
-                    match directions[-1]:
-                        case "N": 
-                            direction = random.choice(["N","W","E"]) 
-                        case "S": 
-                            direction = random.choice(["S","W","E"])
-                        case "W": 
-                            direction = random.choice(["N","W","S"])
-                        case "E": 
-                            direction = random.choice(["N","S","E"])
-                except IndexError: pass
-
-            #Assign | Coords
-            if room.starting_room == False:
-                room.coordinate = currentCoord
-                x = room.coordinate[0]
-                y = room.coordinate[1]
-                if directions[-1] == "N":  y += 1
-                elif directions[-1] == "S": y -= 1
-                elif directions[-1] == "W": x -= 1
-                elif directions[-1] == "E": x += 1
-                room.coordinate = [x,y]
-                currentCoord = room.coordinate
-
-            #No Overlap
-            if len(self.rooms) > 2: #need more than one room to compare
-                for existingRoom in existingRooms: #looping here so we can look at each rooms coordinates
-                    if existingRoom.coordinate == room.coordinate:
-                        print(existingRoom.coordinate,room.coordinate)
-                        #A SOLUTION: When the coords match;
-                        #We need to change the direction of the last rooms attached door, then back up this rooms coordinate and re-assign it.
-
-                        #ADD: Look at last direction and unassign that door from the last room
-                        if directions[-1] == "N":  
-                            self.rooms[-1].N = None
-                        elif directions[-1] == "S": 
-                            self.rooms[-1].S = None
-                        elif directions[-1] == "W": 
-                            self.rooms[-1].W = None
-                        elif directions[-1] == "E":
-                            self.rooms[-1].E = None
-
-                        #Back Up in Coords
-                        x = room.coordinate[0]
-                        y = room.coordinate[1]
-                        if directions[-1] == "N":  y -= 1
-                        elif directions[-1] == "S": y += 1
-                        elif directions[-1] == "W": x += 1
-                        elif directions[-1] == "E": x -= 1
-                        room.coordinate = [x,y]
-
-                        #Choose a differnt Direction
-                        if directions[-1] == "N": 
-                            direction = random.choice(["S","W","E"])
-                        elif directions[-1] == "S":
-                            direction = random.choice(["N","W","E"])
-                        elif directions[-1] == "W":
-                            direction = random.choice(["S","N","E"])
-                        elif directions[-1] == "E":
-                            direction = random.choice(["S","N","W"])
-                        
-                        #Re Assign Coords
-                        x = room.coordinate[0]
-                        y = room.coordinate[1]
-                        if directions[-1] == "N":  y += 1
-                        elif directions[-1] == "S": y -= 1
-                        elif directions[-1] == "W": x -= 1
-                        elif directions[-1] == "E": x += 1
-                        room.coordinate = [x,y]
-                        currentCoord = room.coordinate
-
-                        #ADD: Re Assign the last rooms door to the new direction we're going.
-                        if directions[-1] == "N":  
-                            self.rooms[-1].N = room.id
-                        elif directions[-1] == "S": 
-                            self.rooms[-1].S = room.id
-                        elif directions[-1] == "W": 
-                            self.rooms[-1].W = room.id
-                        elif directions[-1] == "E":
-                            self.rooms[-1].E = room.id
-
-            #Assign | Room IDS & Add to directions
-            if direction == "N":
-                room.N = nextRoomsID
-                directions.append("N")
-            elif direction == "S":
-                room.S = nextRoomsID
-                directions.append("S")
-            elif direction == "W":
-                room.W = nextRoomsID
-                directions.append("W")
-            elif direction == "E":
-                room.E = nextRoomsID
-                directions.append("E")
-
-            self.coordinates.append(room.coordinate)
-            existingRooms.append(room)
-
-
-        #Dubuging
-        print("\n-- ROOMS -----\n")
-        for room in self.rooms:
-            print(f"Rooms Index: {self.rooms.index(room)}:{room}")
-        print(f"Coordinates {self.coordinates}")
-        print(f"Directions: {directions}")
+            print(room)
+        print(path)
         hold()
+
+

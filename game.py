@@ -10,7 +10,7 @@ class Game():
     def setup(self, current_player):
         self.player = current_player
         w = Map()
-        w.generate_map(20)
+        w.generate(10)
         clear_screen()
     def stop(self):
         self.running = False

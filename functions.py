@@ -6,12 +6,15 @@ from colorama import Fore, Back, Style
 
 #Functions
 def wait(sec):
+    """Wait a set amount of time (sec)."""
     time.sleep(sec)
 
 def hold():
+    """Hold the screen from refeshing with an Input, that isnt going to be saved to any varibale."""
     input("\n[...] Press [ENTER] to continue")
 
 def clear_screen():
+    """Clear windows console."""
     os.system("CLS")
 
 #Display
