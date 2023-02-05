@@ -1,5 +1,5 @@
 from functions import *
-from map_generator import Map
+from world_gen import World
 
 class Game():
     def __init__(self):
@@ -9,8 +9,8 @@ class Game():
     #Before Game Start
     def setup(self, current_player):
         self.player = current_player
-        w = Map()
-        w.generate(10)
+        w = World()
+        w.generate()
         clear_screen()
     def stop(self):
         self.running = False
