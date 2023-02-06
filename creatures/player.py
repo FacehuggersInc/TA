@@ -1,5 +1,5 @@
 from functions import *
-character_folder = "A:\PY\Projects\TA\characters"
+character_folder = "characters\\"
 characters = os.listdir(character_folder)
 
 races = [
@@ -60,7 +60,7 @@ class Player():
 
         #Name Input Loop
         while not self.name:
-            name = prompt("What do you want your Name to be?")
+            name = prompt("What do you want your Name to be?" , False)
             self.name = name
 
         #Race Input Loop
