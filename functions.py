@@ -33,20 +33,35 @@ def title2(text = str):
     print(f"\n    {text}")
 
 #Input
-def prompt(title = str):
+def prompt(title = str, acceptNumbers = bool):
     print(f"\n  [!] {title}")
-    return input(f"  [?] ")
+    answer = input(f"  [?] ")
+    if acceptNumbers:
+        if answer.isnumeric():
+            answer = int(answer)
+    return answer
 
 def promptOptions(title = str, options = [], optionSym = "*"):
     while True:
-        print(f"\n  [!] {title}")
+        print(f"\n  [!] {title}\n")
         for option in options:
             print(f"    {optionSym} {option}")
-        user_input = input(f"  [?] ")
+        user_input = input(f"\n  [?] ")
         if not user_input in options:
             print("\nPlease check your choices spelling and try again (case sensitive).")
         else:
             return user_input
+
+def numSelectOptions(title = str, options = []):
+    i = 0
+    for option in options:
+        i += 1
+        print(f"  [{i}] | {option}")
+    user_input = prompt(
+        f"{title}\n      - Name or Number Only   - Case Sensitive", False)
+    if user_input.isnumeric():
+        user_input = options[int(user_input) - 1]
+    return user_input
 
 def decision(title = str, yesOption = str, noOption = str):
     while True:
