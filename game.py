@@ -1,6 +1,6 @@
 from functions import *
 from world_gen import World, saved_worlds
-from creatures.player import Player, character_folder, characters
+from entities.player import Player, character_folder, characters
 
 class Game():
     def __init__(self):
